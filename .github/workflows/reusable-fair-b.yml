@@ -1,0 +1,129 @@
+# Fair-ABCD arm B — trusted reusable workflow.
+# Lives outside the LYING fixture history. Does not import Autopilot.
+name: reusable-fair-b
+on:
+  workflow_call:
+    inputs:
+      subject_sha:
+        required: true
+        type: string
+      base_sha:
+        required: true
+        type: string
+      approval:
+        required: false
+        type: boolean
+        default: false
+  workflow_dispatch:
+    inputs:
+      subject_sha:
+        required: true
+        type: string
+      base_sha:
+        required: true
+        type: string
+      approval:
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  protected-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SUBJECT_SHA: ${{ inputs.subject_sha }}
+      BASE_SHA: ${{ inputs.base_sha }}
+      APPROVAL: ${{ inputs.approval }}
+    steps:
+      - name: Require full SHAs
+        run: |
+          set -euo pipefail
+          echo "subject=${SUBJECT_SHA}"
+          echo "base=${BASE_SHA}"
+          if [[ ! "${SUBJECT_SHA}" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "INCOMPLETE: subject_sha is not a full 40-char SHA"
+            exit 1
+          fi
+          if [[ ! "${BASE_SHA}" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "INCOMPLETE: base_sha is not a full 40-char SHA"
+            exit 1
+          fi
+
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Fetch subject and base (fail-closed)
+        run: |
+          set -euo pipefail
+          git fetch --force origin "${SUBJECT_SHA}" "${BASE_SHA}"
+          git cat-file -t "${SUBJECT_SHA}" | grep -qx commit
+          git cat-file -t "${BASE_SHA}" | grep -qx commit
+
+      - name: Compare trusted surface against BASE
+        run: |
+          set -euo pipefail
+          # Trusted list is hardcoded here. The candidate cannot choose it.
+          PATHS=(
+            "test/protected.test.mjs"
+            "test/e2e.test.mjs"
+            "package.json"
+            ".github/workflows/ci.yml"
+            "coverage-threshold.json"
+          )
+          changed=0
+          missing=0
+          for p in "${PATHS[@]}"; do
+            base_blob="$(git cat-file -e "${BASE_SHA}:${p}" 2>/dev/null && git show "${BASE_SHA}:${p}" || true)"
+            if ! git cat-file -e "${BASE_SHA}:${p}" 2>/dev/null; then
+              echo "INCOMPLETE: trusted path $p missing on BASE ${BASE_SHA}"
+              exit 1
+            fi
+            if ! git cat-file -e "${SUBJECT_SHA}:${p}" 2>/dev/null; then
+              echo "REJECT: protected path deleted on subject: $p"
+              missing=1
+              continue
+            fi
+            if ! git diff --quiet "${BASE_SHA}" "${SUBJECT_SHA}" -- "$p"; then
+              echo "SURFACE_CHANGED: $p"
+              git diff --stat "${BASE_SHA}" "${SUBJECT_SHA}" -- "$p"
+              changed=1
+            else
+              echo "UNCHANGED: $p"
+            fi
+          done
+          if [[ "${missing}" -ne 0 ]]; then
+            echo "B_DECISION=REJECT_PROTECTED_PATH_DELETED"
+            exit 1
+          fi
+          if [[ "${changed}" -ne 0 && "${APPROVAL}" != "true" ]]; then
+            echo "B_DECISION=REJECT_UNAPPROVED_SURFACE_CHANGE"
+            echo "Protected tests/config/workflow changed vs BASE without external approval."
+            exit 1
+          fi
+          echo "surface_ok=1"
+
+      - name: Checkout exact subject SHA
+        run: |
+          set -euo pipefail
+          git checkout --force --detach "${SUBJECT_SHA}"
+          test "$(git rev-parse HEAD)" = "${SUBJECT_SHA}"
+          echo "checked_out=$(git rev-parse HEAD)"
+          echo "tree=$(git rev-parse HEAD^{tree})"
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+
+      - name: Run trusted commands on subject (not candidate scripts)
+        run: |
+          set -euo pipefail
+          # Trusted argv. Candidate package.json scripts are ignored.
+          timeout 60s node test/protected.test.mjs
+          timeout 60s node test/e2e.test.mjs
+          echo "B_DECISION=ADMIT"

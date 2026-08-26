@@ -1,0 +1,24 @@
+# Dispatcher for arm B. Pins the reusable workflow by full SHA.
+name: fair-b-run
+on:
+  workflow_dispatch:
+    inputs:
+      subject_sha:
+        required: true
+        type: string
+      base_sha:
+        required: true
+        type: string
+      approval:
+        required: false
+        type: boolean
+        default: false
+permissions:
+  contents: read
+jobs:
+  b:
+    uses: kosza123/claim-gate-autopilot/.github/workflows/reusable-fair-b.yml@5a56bfb8fd43d60e83566e3aef87b92ebe2e4cab
+    with:
+      subject_sha: ${{ inputs.subject_sha }}
+      base_sha: ${{ inputs.base_sha }}
+      approval: ${{ inputs.approval }}
