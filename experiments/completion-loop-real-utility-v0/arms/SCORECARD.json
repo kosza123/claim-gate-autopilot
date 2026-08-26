@@ -1,0 +1,6 @@
+{
+  "form": "completion-loop-real-utility-v0-scorecard",
+  "maxCycles": 3,
+  "fields": ["arm", "candidateId", "candidateSha", "oracleVerdict", "oracleInvariantId", "autopilotVerdict", "autopilotReason", "cyclesUsed", "humanInterventions", "wallClockSeconds", "falseAdmit", "falseReject", "closedWithoutHuman", "notes"],
+  "rows": []
+}
