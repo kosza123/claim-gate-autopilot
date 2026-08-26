@@ -1,0 +1,53 @@
+{
+  "arm": "NATIVE",
+  "utc": "2026-08-26T20:29:23Z",
+  "model": "Grok Build",
+  "model_release": "2026-04",
+  "runtime": "Grok App Builder sandbox",
+  "node": "v22.23.2",
+  "git": "2.39.5",
+  "os": "Linux 6.12.8+ x86_64",
+  "fastcheck": "3.23.2",
+  "startShaRequired": "cf369a1bd7569e87480d825b404ffddfae218758",
+  "startShaObserved": "cf369a1bd7569e87480d825b404ffddfae218758",
+  "branch": "experiment/completion-loop-native-v0",
+  "startDrift": false,
+  "protocolPath": "experiments/completion-loop-real-utility-v0/arms/NATIVE.md",
+  "runnerNeutralIdSupported": false,
+  "runnerNeutralIdNotes": "oracle/run.mjs ignores --case/--id/--case-id/CASE_ID/positional id; only --impl PATH, --out DIR, --head SHA, --runs N are effective. Neutral ID mapping uses freeze/MANIFEST.sha256 path prefix, not CATALOG.json.",
+  "standardResultHasFactsAndCounterexample": true,
+  "standardResultHasMutantName": false,
+  "standardResultHasReadyMadeFix": false,
+  "nativeHook": "oracle-out/junit.xml + oracle-out/evidence.json",
+  "preflightOracleOnFreezeClinic": {
+    "verdict": "ADMIT",
+    "reasonCode": "ALL_INVARIANTS_HELD",
+    "fcEngine": "fast-check@3.23.2",
+    "runs": 167,
+    "candidateSha": "cf369a1bd7569e87480d825b404ffddfae218758"
+  },
+  "contamination": [
+    {
+      "path": "experiments/completion-loop-real-utility-v0/freeze/check-catalog.mjs",
+      "how": "accidental execution expecting --help; script printed CATALOG matrix expected labels for all 17 cases",
+      "utc": "2026-08-26T20:24:30Z"
+    },
+    {
+      "path": "experiments/completion-loop-real-utility-v0/freeze/CATALOG.json",
+      "how": "indirect, via check-catalog.mjs internal read (not opened directly by the arm thread)",
+      "utc": "2026-08-26T20:24:30Z"
+    }
+  ],
+  "bannedReadsAvoided": [
+    "oracle/model.mjs",
+    "oracle/compare.mjs",
+    "oracle/run.mjs",
+    "oracle/policy.json",
+    "oracle/commands.mjs",
+    "experiments/completion-loop-real-utility-v0/fixtures/ (source not opened)",
+    "experiments/completion-loop-real-utility-v0/arms/SCORECARD.json (deferred to arm end)",
+    "experiments/completion-loop-real-utility-v0/arms/AUTOPILOT.md",
+    "experiment/completion-loop-autopilot-v0-results"
+  ],
+  "candidateUnchangedByPreflight": true
+}
