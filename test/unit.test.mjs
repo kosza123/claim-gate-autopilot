@@ -28,6 +28,19 @@ function expectTransferError(fn, code, requestId) {
   });
 }
 
+function ownMap(pairs) {
+  const out = Object.create(null);
+  for (const [key, value] of pairs) {
+    Object.defineProperty(out, key, {
+      value,
+      enumerable: true,
+      writable: true,
+      configurable: true,
+    });
+  }
+  return out;
+}
+
 test("withdraw still rejects insufficient funds", () => {
   assert.throws(() => withdraw(40, 100), /insufficient/);
 });
@@ -230,4 +243,174 @@ test("sequential daily limit uses prior transfers in the same batch", () => {
     "DAILY_LIMIT_EXCEEDED",
     "second",
   );
+});
+
+test("id toString is a legal processed key and transfers", () => {
+  const state = ledgerState();
+  const next = applyTransferBatch(state, [transfer("toString", "alice", "bob", 100)]);
+  assert.equal(next.balances.alice, 9900);
+  assert.equal(next.balances.bob, 5100);
+  assert.deepEqual(next.processed.toString, {
+    from: "alice",
+    to: "bob",
+    amountCents: 100,
+    dailyLimitCents: 10000,
+  });
+  const replay = applyTransferBatch(next, [transfer("toString", "alice", "bob", 100)]);
+  assert.equal(replay.balances.alice, 9900);
+});
+
+test("id constructor is a legal processed key and transfers", () => {
+  const state = ledgerState();
+  const next = applyTransferBatch(state, [transfer("constructor", "alice", "bob", 100)]);
+  assert.equal(next.balances.alice, 9900);
+  assert.deepEqual(next.processed.constructor, {
+    from: "alice",
+    to: "bob",
+    amountCents: 100,
+    dailyLimitCents: 10000,
+  });
+});
+
+test("id __proto__ is stored as an own entry and replay is a no-op", () => {
+  const state = ledgerState();
+  const req = transfer("__proto__", "alice", "bob", 250);
+  const next = applyTransferBatch(state, [req, req]);
+  assert.equal(next.balances.alice, 9750);
+  assert.equal(next.balances.bob, 5250);
+  assert.equal(next.sentToday.alice, 250);
+  assert.equal(Object.prototype.hasOwnProperty.call(next.processed, "__proto__"), true);
+  assert.deepEqual(Object.getOwnPropertyDescriptor(next.processed, "__proto__").value, {
+    from: "alice",
+    to: "bob",
+    amountCents: 250,
+    dailyLimitCents: 10000,
+  });
+  const proto = Object.getPrototypeOf(next.processed);
+  assert.ok(proto === null || proto === Object.prototype);
+  const replay = applyTransferBatch(next, [req]);
+  assert.equal(replay.balances.alice, 9750);
+  assert.equal(replay.sentToday.alice, 250);
+});
+
+test("two distinct transfers from account __proto__ sum sentToday and respect the daily limit", () => {
+  const state = {
+    balances: ownMap([
+      ["__proto__", 10000],
+      ["bob", 0],
+    ]),
+    sentToday: ownMap([]),
+    processed: ownMap([]),
+  };
+  const first = applyTransferBatch(state, [transfer("p1", "__proto__", "bob", 4000, 5000)]);
+  assert.equal(Object.getOwnPropertyDescriptor(first.balances, "__proto__").value, 6000);
+  assert.equal(first.balances.bob, 4000);
+  assert.equal(Object.getOwnPropertyDescriptor(first.sentToday, "__proto__").value, 4000);
+
+  const second = applyTransferBatch(first, [transfer("p2", "__proto__", "bob", 1000, 5000)]);
+  assert.equal(Object.getOwnPropertyDescriptor(second.sentToday, "__proto__").value, 5000);
+  assert.equal(second.balances.bob, 5000);
+
+  expectTransferError(
+    () => applyTransferBatch(second, [transfer("p3", "__proto__", "bob", 1, 5000)]),
+    "DAILY_LIMIT_EXCEEDED",
+    "p3",
+  );
+});
+
+test("exact historical replay is a no-op even after old accounts are gone", () => {
+  const processed = {
+    "old-tx": { from: "ghost-from", to: "ghost-to", amountCents: 100, dailyLimitCents: 10000 },
+  };
+  const state = ledgerState({ processed });
+  delete state.balances.alice;
+  const next = applyTransferBatch(state, [transfer("old-tx", "ghost-from", "ghost-to", 100, 10000)]);
+  assert.deepEqual(next.processed["old-tx"], processed["old-tx"]);
+  assert.equal(next.balances.bob, 5000);
+  assert.equal(Object.prototype.hasOwnProperty.call(next.balances, "ghost-from"), false);
+});
+
+test("historical id conflict takes precedence over ACCOUNT_NOT_FOUND", () => {
+  const state = ledgerState({
+    processed: {
+      "old-tx": { from: "ghost-from", to: "ghost-to", amountCents: 100, dailyLimitCents: 10000 },
+    },
+  });
+  expectTransferError(
+    () => applyTransferBatch(state, [transfer("old-tx", "ghost-from", "ghost-to", 200, 10000)]),
+    "IDEMPOTENCY_CONFLICT",
+    "old-tx",
+  );
+});
+
+test("receiver balance overflow is rejected with no partial state change", () => {
+  const state = ledgerState({
+    balances: { alice: 10, bob: Number.MAX_SAFE_INTEGER, carol: 1 },
+  });
+  const snapshot = structuredClone(state);
+  expectTransferError(
+    () =>
+      applyTransferBatch(state, [
+        transfer("ok", "carol", "alice", 1),
+        transfer("boom", "alice", "bob", 1),
+      ]),
+    "INVALID_REQUEST",
+    "boom",
+  );
+  assert.deepEqual(state, snapshot);
+  assert.equal(state.balances.alice, 10);
+  assert.equal(state.balances.bob, Number.MAX_SAFE_INTEGER);
+});
+
+test("Date Map Set and class instances are not valid maps", () => {
+  class Ledger {}
+  for (const bad of [new Date(), new Map(), new Set(), [], new Ledger()]) {
+    expectTransferError(
+      () => applyTransferBatch({ balances: bad, sentToday: {}, processed: {} }, []),
+      "INVALID_STATE",
+    );
+    expectTransferError(
+      () => applyTransferBatch({ balances: {}, sentToday: bad, processed: {} }, []),
+      "INVALID_STATE",
+    );
+    expectTransferError(
+      () => applyTransferBatch({ balances: {}, sentToday: {}, processed: bad }, []),
+      "INVALID_STATE",
+    );
+  }
+});
+
+test("extra state metadata is preserved on empty batch and valid transfer", () => {
+  const state = ledgerState();
+  state.note = "keep-me";
+  state.meta = { region: "eu", nested: { n: 1 } };
+  const empty = applyTransferBatch(state, []);
+  assert.equal(empty.note, "keep-me");
+  assert.deepEqual(empty.meta, { region: "eu", nested: { n: 1 } });
+  empty.meta.nested.n = 9;
+  assert.equal(state.meta.nested.n, 1);
+
+  const next = applyTransferBatch(state, [transfer("keep", "alice", "bob", 100)]);
+  assert.equal(next.note, "keep-me");
+  assert.deepEqual(next.meta, { region: "eu", nested: { n: 1 } });
+  assert.equal(next.balances.alice, 9900);
+});
+
+test("rejects invalid dailyLimitCents values", () => {
+  const state = ledgerState();
+  for (const dailyLimitCents of [
+    0,
+    -1,
+    1.5,
+    Number.NaN,
+    Number.POSITIVE_INFINITY,
+    Number.NEGATIVE_INFINITY,
+    Number.MAX_SAFE_INTEGER + 1,
+  ]) {
+    expectTransferError(
+      () => applyTransferBatch(state, [transfer("bad-limit", "alice", "bob", 100, dailyLimitCents)]),
+      "INVALID_REQUEST",
+      "bad-limit",
+    );
+  }
 });

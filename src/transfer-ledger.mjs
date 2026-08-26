@@ -8,7 +8,9 @@ export class TransferError extends Error {
 }
 
 function isPlainObject(value) {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
+  if (value === null || typeof value !== "object") return false;
+  const proto = Object.getPrototypeOf(value);
+  return proto === Object.prototype || proto === null;
 }
 
 function isNonEmptyString(value) {
@@ -23,27 +25,88 @@ function isNonNegativeSafeInteger(value) {
   return Number.isSafeInteger(value) && value >= 0;
 }
 
+function ownHas(obj, key) {
+  return Object.prototype.hasOwnProperty.call(obj, key);
+}
+
+function ownGet(obj, key) {
+  const desc = Object.getOwnPropertyDescriptor(obj, key);
+  return desc === undefined ? undefined : desc.value;
+}
+
+function ownSet(obj, key, value) {
+  Object.defineProperty(obj, key, {
+    value,
+    enumerable: true,
+    writable: true,
+    configurable: true,
+  });
+}
+
+function ownKeys(obj) {
+  return Object.getOwnPropertyNames(obj).filter((key) => ownHas(obj, key));
+}
+
 function fail(code, message, requestId) {
   throw new TransferError(code, message, requestId);
 }
 
+function cloneNumberMap(map) {
+  const out = Object.create(null);
+  for (const key of ownKeys(map)) {
+    ownSet(out, key, ownGet(map, key));
+  }
+  return out;
+}
+
+function cloneProcessed(processed) {
+  const out = Object.create(null);
+  for (const key of ownKeys(processed)) {
+    const entry = ownGet(processed, key);
+    ownSet(out, key, { ...entry });
+  }
+  return out;
+}
+
+function cloneExtra(value) {
+  if (value === null || typeof value !== "object") return value;
+  try {
+    return structuredClone(value);
+  } catch {
+    return value;
+  }
+}
+
+function cloneState(state) {
+  const next = {};
+  for (const key of ownKeys(state)) {
+    if (key === "balances" || key === "sentToday" || key === "processed") continue;
+    ownSet(next, key, cloneExtra(ownGet(state, key)));
+  }
+  next.balances = cloneNumberMap(state.balances);
+  next.sentToday = cloneNumberMap(state.sentToday);
+  next.processed = cloneProcessed(state.processed);
+  return next;
+}
+
+function assertNumberMap(map, label) {
+  if (!isPlainObject(map)) fail("INVALID_STATE", `${label} must be an object`);
+  for (const key of ownKeys(map)) {
+    const amount = ownGet(map, key);
+    if (!isNonEmptyString(key) || !isNonNegativeSafeInteger(amount)) {
+      fail("INVALID_STATE", `${label} must use non-empty account names and non-negative safe integers`);
+    }
+  }
+}
+
 function assertState(state) {
   if (!isPlainObject(state)) fail("INVALID_STATE", "state must be an object");
-  if (!isPlainObject(state.balances)) fail("INVALID_STATE", "balances must be an object");
-  if (!isPlainObject(state.sentToday)) fail("INVALID_STATE", "sentToday must be an object");
+  assertNumberMap(state.balances, "balances");
+  assertNumberMap(state.sentToday, "sentToday");
   if (!isPlainObject(state.processed)) fail("INVALID_STATE", "processed must be an object");
 
-  for (const [account, amount] of Object.entries(state.balances)) {
-    if (!isNonEmptyString(account) || !isNonNegativeSafeInteger(amount)) {
-      fail("INVALID_STATE", "balances must use non-empty account names and non-negative safe integers");
-    }
-  }
-  for (const [account, amount] of Object.entries(state.sentToday)) {
-    if (!isNonEmptyString(account) || !isNonNegativeSafeInteger(amount)) {
-      fail("INVALID_STATE", "sentToday must use non-empty account names and non-negative safe integers");
-    }
-  }
-  for (const [id, entry] of Object.entries(state.processed)) {
+  for (const id of ownKeys(state.processed)) {
+    const entry = ownGet(state.processed, id);
     if (!isNonEmptyString(id) || !isPlainObject(entry)) {
       fail("INVALID_STATE", "processed entries must be objects keyed by non-empty ids");
     }
@@ -57,18 +120,6 @@ function assertState(state) {
       fail("INVALID_STATE", "processed entry is malformed");
     }
   }
-}
-
-function cloneState(state) {
-  const processed = {};
-  for (const [id, entry] of Object.entries(state.processed)) {
-    processed[id] = { ...entry };
-  }
-  return {
-    balances: { ...state.balances },
-    sentToday: { ...state.sentToday },
-    processed,
-  };
 }
 
 function normalizeRequest(request) {
@@ -103,8 +154,18 @@ function validateRequest(request) {
   }
 }
 
-function hasAccount(balances, account) {
-  return Object.prototype.hasOwnProperty.call(balances, account);
+function addSafeNonNegative(a, b) {
+  if (!isNonNegativeSafeInteger(a) || !isNonNegativeSafeInteger(b)) return null;
+  const sum = a + b;
+  if (!isNonNegativeSafeInteger(sum)) return null;
+  return sum;
+}
+
+function subSafeNonNegative(a, b) {
+  if (!isNonNegativeSafeInteger(a) || !isNonNegativeSafeInteger(b) || a < b) return null;
+  const diff = a - b;
+  if (!isNonNegativeSafeInteger(diff)) return null;
+  return diff;
 }
 
 export function applyTransferBatch(state, requests) {
@@ -116,38 +177,43 @@ export function applyTransferBatch(state, requests) {
   for (const request of requests) {
     validateRequest(request);
     const { id, from, to, amountCents, dailyLimitCents } = request;
-
-    if (!hasAccount(next.balances, from) || !hasAccount(next.balances, to)) {
-      fail("ACCOUNT_NOT_FOUND", "account not found", id);
-    }
-
     const normalized = normalizeRequest(request);
-    if (Object.prototype.hasOwnProperty.call(next.processed, id)) {
-      if (sameNormalized(next.processed[id], normalized)) continue;
+
+    if (ownHas(next.processed, id)) {
+      const prior = ownGet(next.processed, id);
+      if (sameNormalized(prior, normalized)) continue;
       fail("IDEMPOTENCY_CONFLICT", "id already processed with different parameters", id);
     }
 
-    const fromBalance = next.balances[from];
-    const toBalance = next.balances[to];
-    if (fromBalance < amountCents) {
+    if (!ownHas(next.balances, from) || !ownHas(next.balances, to)) {
+      fail("ACCOUNT_NOT_FOUND", "account not found", id);
+    }
+
+    const fromBalance = ownGet(next.balances, from);
+    const toBalance = ownGet(next.balances, to);
+    const nextFromBalance = subSafeNonNegative(fromBalance, amountCents);
+    if (nextFromBalance === null) {
       fail("INSUFFICIENT_FUNDS", "insufficient funds", id);
     }
 
-    const sent = Object.prototype.hasOwnProperty.call(next.sentToday, from) ? next.sentToday[from] : 0;
-    const sentAfter = sent + amountCents;
+    const sent = ownHas(next.sentToday, from) ? ownGet(next.sentToday, from) : 0;
+    const sentAfter = addSafeNonNegative(sent, amountCents);
+    if (sentAfter === null) {
+      fail("INVALID_REQUEST", "transfer would overflow a safe integer", id);
+    }
     if (sentAfter > dailyLimitCents) {
       fail("DAILY_LIMIT_EXCEEDED", "daily limit exceeded", id);
     }
 
-    const nextToBalance = toBalance + amountCents;
-    if (!Number.isSafeInteger(nextToBalance) || !Number.isSafeInteger(sentAfter)) {
+    const nextToBalance = addSafeNonNegative(toBalance, amountCents);
+    if (nextToBalance === null) {
       fail("INVALID_REQUEST", "transfer would overflow a safe integer", id);
     }
 
-    next.balances[from] = fromBalance - amountCents;
-    next.balances[to] = nextToBalance;
-    next.sentToday[from] = sentAfter;
-    next.processed[id] = normalized;
+    ownSet(next.balances, from, nextFromBalance);
+    ownSet(next.balances, to, nextToBalance);
+    ownSet(next.sentToday, from, sentAfter);
+    ownSet(next.processed, id, normalized);
   }
 
   return next;
