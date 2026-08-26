@@ -1,0 +1,6 @@
+{
+  "frozen": true,
+  "note": "Do not reorder after any case result.",
+  "NATIVE": ["m01","g1","m02","m03","g2","m04","m05","m06","g3","m07","m08","m09","g4","m10","m11","m12","g5"],
+  "AUTOPILOT": ["g5","m12","m01","g1","m11","m02","g2","m10","m03","m09","g3","m08","m04","m07","g4","m06","m05"]
+}
