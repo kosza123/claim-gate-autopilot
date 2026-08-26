@@ -44,9 +44,11 @@ export function digestWorkDir(dir: string, paths: string[]): string {
   return sha256(lines.join("\n"));
 }
 
-/** Make extracted subject tree non-writable so a duty cannot edit later duties' files. */
+/** Freeze files only. Directories stay writable so the verifier can delete the copy. */
 export function freezeTree(dir: string): void {
-  spawnSync("chmod", ["-R", "a-w", dir], { timeout: 10_000 });
+  spawnSync("find", [dir, "-type", "f", "-exec", "chmod", "a-w", "{}", "+"], {
+    timeout: 10_000,
+  });
 }
 
 export function isInside(root: string, file: string): boolean {

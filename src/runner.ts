@@ -109,5 +109,6 @@ export function writeFreshOutput(dir: string, name: string, body: string): strin
 }
 
 export function removeWork(dir: string): void {
+  spawnSync("chmod", ["-R", "u+w", dir], { timeout: 10_000 });
   rmSync(dir, { recursive: true, force: true });
 }
