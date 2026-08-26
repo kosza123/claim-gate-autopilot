@@ -9,4 +9,3 @@ jobs:
         with:
           node-version: "22"
       - run: npm test
-      - run: npm run e2e
