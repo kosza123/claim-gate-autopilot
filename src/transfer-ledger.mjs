@@ -116,21 +116,7 @@ function assertValidState(state) {
 }
 
 function cloneState(state) {
-  return {
-    balances: { ...state.balances },
-    sentToday: { ...state.sentToday },
-    processed: Object.fromEntries(
-      Object.entries(state.processed).map(([id, entry]) => [
-        id,
-        {
-          from: entry.from,
-          to: entry.to,
-          amountCents: entry.amountCents,
-          dailyLimitCents: entry.dailyLimitCents,
-        },
-      ]),
-    ),
-  };
+  return structuredClone(state);
 }
 
 function sameTransfer(recorded, request) {
