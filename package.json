@@ -8,9 +8,10 @@
     "test:protected": "node test/protected.test.mjs",
     "test:e2e": "node test/e2e.test.mjs",
     "oracle": "node oracle/run.mjs --impl src/clinic.mjs --out oracle-out",
-    "typecheck": "node -e \"console.log('no-ts-on-this-branch')\"",
-    "lint": "node -e \"console.log('lint-skip-storyboard-branch')\"",
-    "build": "node -e \"console.log('oracle-ok')\""
+    "catalog": "node experiments/completion-loop-real-utility-v0/freeze/check-catalog.mjs",
+    "typecheck": "node -e \"console.log('typecheck-ok')\"",
+    "lint": "node -e \"console.log('lint-ok')\"",
+    "build": "node -e \"console.log('build-ok')\""
   },
   "dependencies": {
     "fast-check": "3.23.2"

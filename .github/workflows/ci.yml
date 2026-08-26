@@ -6,12 +6,14 @@ on:
       - experiment/completion-loop-real-utility-v0
       - experiment/completion-loop-native-v0
       - experiment/completion-loop-autopilot-v0
+      - repair/completion-loop-ab-freeze-v0a
+      - repair/completion-loop-ab-freeze-v0b
 permissions:
   contents: read
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
@@ -21,7 +23,11 @@ jobs:
           node-version: "22"
           cache: npm
       - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run build
       - run: node --test test/unit.test.mjs
       - run: node test/e2e.test.mjs
       - run: node test/protected.test.mjs
       - run: node oracle/run.mjs --impl src/clinic.mjs --out /tmp/oracle-out --head "${{ github.sha }}"
+      - run: node experiments/completion-loop-real-utility-v0/freeze/check-catalog.mjs

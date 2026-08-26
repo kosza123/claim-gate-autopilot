@@ -1,0 +1,10 @@
+{
+  "oracleReadableByAgent": true,
+  "blindEvaluation": false,
+  "nonBypassable": false,
+  "agentLoopsExecuted": false,
+  "productAdvantageProven": false,
+  "commercialValueProven": false,
+  "dataset": "v0b",
+  "datasetDiffFromV0a": "only m04-confirm-after-cancel plus manifest/report/catalog/flags"
+}
