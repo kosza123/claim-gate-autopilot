@@ -1,0 +1,145 @@
+[
+  {
+    "caseId": "g5",
+    "startSha": "3f7f9fd4cad773b78e93f6e20e99bbe068628ec1",
+    "endSha": "3f7f9fd4cad773b78e93f6e20e99bbe068628ec1",
+    "cycles": 0,
+    "changedFiles": []
+  },
+  {
+    "caseId": "m12",
+    "startSha": "60429a8ec9042f4864103f00a67108812480f5b0",
+    "endSha": "e3aef02fb9900e25ea582302da00b0271b4d17f6",
+    "cycles": 1,
+    "changedFiles": [
+      "src/clinic.mjs"
+    ]
+  },
+  {
+    "caseId": "m01",
+    "startSha": "9a54a61d425a912179b1c23ee9749c9b51fe0e4b",
+    "endSha": "a5ee55fe2c71ae2f0187cd2c43ab895ce4e58eb9",
+    "cycles": 1,
+    "changedFiles": [
+      "src/clinic.mjs"
+    ]
+  },
+  {
+    "caseId": "g1",
+    "startSha": "cf369a1bd7569e87480d825b404ffddfae218758",
+    "endSha": "cf369a1bd7569e87480d825b404ffddfae218758",
+    "cycles": 0,
+    "changedFiles": []
+  },
+  {
+    "caseId": "m11",
+    "startSha": "5387d873b88c4bd34f3fb4b24d45fdd64e2e181c",
+    "endSha": "7e25b0ac09830c5921996f6ad981676d2b1c6cd1",
+    "cycles": 1,
+    "changedFiles": [
+      "src/clinic.mjs"
+    ]
+  },
+  {
+    "caseId": "m02",
+    "startSha": "cde20671cc15eb1326913fa2c9efedcb498ac000",
+    "endSha": "16aad303ef0e3e6a5052ff9689ea65988c17754b",
+    "cycles": 1,
+    "changedFiles": [
+      "src/clinic.mjs"
+    ]
+  },
+  {
+    "caseId": "g2",
+    "startSha": "f0ae30e00cc35d9f83d88a180a4f5600588f2ef2",
+    "endSha": "f0ae30e00cc35d9f83d88a180a4f5600588f2ef2",
+    "cycles": 0,
+    "changedFiles": []
+  },
+  {
+    "caseId": "m10",
+    "startSha": "4d25355035afdb9012a8f6278ea2155f1cd14613",
+    "endSha": "5b46122c4e03df795f0d76a81c9593494a177d9a",
+    "cycles": 1,
+    "changedFiles": [
+      "src/clinic.mjs"
+    ]
+  },
+  {
+    "caseId": "m03",
+    "startSha": "14d8a876810e66bf7bd673f4a357477662ecee50",
+    "endSha": "a9f05f17f0499d37ca2dee463a960386011b538c",
+    "cycles": 1,
+    "changedFiles": [
+      "src/clinic.mjs"
+    ]
+  },
+  {
+    "caseId": "m09",
+    "startSha": "827a1281f23f546130b534d17c12e52e34dfea6f",
+    "endSha": "ec1297bf2cf55b3d9acd8d7389e94bfbe199bde2",
+    "cycles": 1,
+    "changedFiles": [
+      "src/clinic.mjs"
+    ]
+  },
+  {
+    "caseId": "g3",
+    "startSha": "b556d171483952294753ab45799858b9d33edd25",
+    "endSha": "b556d171483952294753ab45799858b9d33edd25",
+    "cycles": 0,
+    "changedFiles": []
+  },
+  {
+    "caseId": "m08",
+    "startSha": "28911911501cb4df59c1f338c6aa099646e33da8",
+    "endSha": "68be10b36a73e6558e687a92fc70b2d3d5c0ba7c",
+    "cycles": 1,
+    "changedFiles": [
+      "src/clinic.mjs"
+    ]
+  },
+  {
+    "caseId": "m04",
+    "startSha": "43424c2a59b66994c6ba3593ab55b99be07cc488",
+    "endSha": "c9ac3dbc1aba4109d78e5cc498ee9e7d20b74da8",
+    "cycles": 1,
+    "changedFiles": [
+      "src/clinic.mjs"
+    ]
+  },
+  {
+    "caseId": "m07",
+    "startSha": "7d6d1d2914010176c1562bc6125c6128313e9a71",
+    "endSha": "161cd15a2a80c4396a7e9205011d19c94983b335",
+    "cycles": 1,
+    "changedFiles": [
+      "src/clinic.mjs"
+    ]
+  },
+  {
+    "caseId": "g4",
+    "startSha": "63ffae9e45f8e454438ee7a17c91d81f71178c0f",
+    "endSha": "63ffae9e45f8e454438ee7a17c91d81f71178c0f",
+    "cycles": 0,
+    "changedFiles": []
+  },
+  {
+    "caseId": "m06",
+    "startSha": "8f2ac8efa328ce87a0572f3970c2a8b15a3b5c7f",
+    "endSha": "33ff4af2120ecab65770dc556418926ae44cfed6",
+    "cycles": 1,
+    "changedFiles": [
+      "src/clinic.mjs"
+    ]
+  },
+  {
+    "caseId": "m05",
+    "startSha": "d95eeff0e47c4aa84b57524264968de43da19a63",
+    "endSha": "64ea951bfa53fe11a993783f88a4b6bca83d07b2",
+    "cycles": 1,
+    "changedFiles": [
+      "src/clinic.mjs"
+    ]
+  }
+]

@@ -291,7 +291,7 @@
       "notes": "initial REJECT; final oracle ADMIT; Autopilot D never overrides oracle"
     }
   ],
-  "autopilotArmTotals": {
+  "armTotals": {
     "initialAdmit": [
       "g5",
       "g1",
@@ -337,5 +337,7 @@
     "autopilotControllerMs": 12891,
     "contextCarryover": true
   },
-  "autopilotFilledAt": "2026-08-26T20:16:00Z"
+  "filledAt": "2026-08-26T20:16:00Z",
+  "filledBy": "AUTOPILOT_ARM",
+  "doNotCompareToNativeInThisFile": true
 }
