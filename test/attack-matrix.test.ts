@@ -67,6 +67,9 @@ describe("adversarial matrix", { concurrency: false }, () => {
               timedOut: false,
               crashed: false,
               verdict: "pass",
+              committedDigest: "",
+              workspaceBeforeDigest: "",
+              workspaceAfterDigest: "",
             },
           ],
         });
@@ -359,6 +362,9 @@ jobs:
               timedOut: false,
               crashed: false,
               verdict: "pass",
+              committedDigest: "",
+              workspaceBeforeDigest: "",
+              workspaceAfterDigest: "",
             },
           ],
         });

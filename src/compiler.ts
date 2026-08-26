@@ -3,6 +3,12 @@ import { isGitRepo, remoteUrl, resolveSha, treeSha } from "./git.ts";
 import { inspectSurface } from "./surface.ts";
 import { materialize, removeWork, runDuty } from "./runner.ts";
 import { buildFixPack } from "./fixpack.ts";
+import {
+  digestCommitted,
+  digestWorkDir,
+  freezeTree,
+  surfacePaths,
+} from "./workspace.ts";
 import type { CompileInput, DutyEvidence, Finding, Report, Verdict } from "./types.ts";
 
 export function compile(input: CompileInput): Report {
@@ -89,16 +95,24 @@ export function compile(input: CompileInput): Report {
   const approved = (input.approvals || []).some(
     (a) => a.headSha === headSha && a.policyDigest === digest,
   );
-  const weaken = findings.filter((f) => f.kind === "weaken");
-  const surface = findings.filter((f) => f.kind === "surface");
+  const paths = surfacePaths(input.repoDir, headSha, input.policy);
+  const committed = digestCommitted(input.repoDir, headSha, paths);
 
-  let workDir = "";
-  let duties: DutyEvidence[] = [];
+  const duties: DutyEvidence[] = [];
   try {
-    workDir = materialize(input.repoDir, headSha);
     for (const duty of input.policy.duties) {
-      duties.push(
-        runDuty({
+      const workDir = materialize(input.repoDir, headSha);
+      try {
+        freezeTree(workDir);
+        const before = digestWorkDir(workDir, paths);
+        if (before !== committed) {
+          findings.push({
+            code: "MATERIALIZE_MISMATCH",
+            detail: `extracted tree for ${duty.id} does not match committed surface`,
+            kind: "mismatch",
+          });
+        }
+        const ev = runDuty({
           repo,
           repoDir: input.repoDir,
           workDir,
@@ -108,8 +122,22 @@ export function compile(input: CompileInput): Report {
           policyDigest: digest,
           verifier: input.verifier,
           duty,
-        }),
-      );
+        });
+        const after = digestWorkDir(workDir, paths);
+        ev.committedDigest = committed;
+        ev.workspaceBeforeDigest = before;
+        ev.workspaceAfterDigest = after;
+        if (after !== before || before !== committed) {
+          findings.push({
+            code: "CROSS_DUTY_TAMPER",
+            detail: `duty ${duty.id} mutated the subject tree (before=${before.slice(0, 12)} after=${after.slice(0, 12)})`,
+            kind: "weaken",
+          });
+        }
+        duties.push(ev);
+      } finally {
+        removeWork(workDir);
+      }
     }
   } catch (err) {
     return incomplete("VERIFIER_CRASH", `Verifier crash: ${(err as Error).message}`, {
@@ -117,15 +145,17 @@ export function compile(input: CompileInput): Report {
       headSha,
       treeSha: tree,
       findings,
+      duties,
     });
-  } finally {
-    if (workDir) removeWork(workDir);
   }
 
   const timed = duties.filter((d) => d.timedOut);
   const crashed = duties.filter((d) => d.crashed);
   const failed = duties.filter((d) => d.verdict === "fail");
   const incompleteDuties = duties.filter((d) => d.verdict === "incomplete");
+  const tamper = findings.filter((f) => f.code === "CROSS_DUTY_TAMPER" || f.code === "MATERIALIZE_MISMATCH");
+  const weaken = findings.filter((f) => f.kind === "weaken");
+  const surface = findings.filter((f) => f.kind === "surface");
   const fixPack = buildFixPack(headSha, findings, duties);
 
   const finish = (verdict: Verdict, reasonCode: string, human: string): Report => ({
@@ -152,6 +182,13 @@ export function compile(input: CompileInput): Report {
       "INCOMPLETE",
       "DUTY_INCOMPLETE",
       "A required duty crashed or did not produce an exit code.",
+    );
+  }
+  if (tamper.length) {
+    return finish(
+      "REJECT",
+      tamper[0].code,
+      `Subject tree was mutated during a duty on ${headSha}. Fresh copies do not save a poisoned workspace.`,
     );
   }
   if (weaken.length) {

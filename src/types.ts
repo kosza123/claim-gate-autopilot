@@ -41,6 +41,9 @@ export type DutyEvidence = {
   timedOut: boolean;
   crashed: boolean;
   verdict: "pass" | "fail" | "incomplete";
+  committedDigest: string;
+  workspaceBeforeDigest: string;
+  workspaceAfterDigest: string;
 };
 
 export type FixAction = {

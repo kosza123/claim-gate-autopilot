@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import { compile } from "./compiler.ts";
 import { loadPolicy } from "./policy.ts";
 import { git } from "./git.ts";
+import { isInside } from "./workspace.ts";
 import type { Approval, DutyEvidence, Report } from "./types.ts";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -78,9 +79,30 @@ export function main(argv = process.argv.slice(2)): number {
 
   try {
     const repoDir = resolve(arg("--repo", argv) || process.cwd());
+    const policyFlag = arg("--policy", argv);
     const policyPath = resolve(
-      arg("--policy", argv) || join(here, "..", "policies", "node-green-subtraction-v0.json"),
+      policyFlag || join(here, "..", "policies", "node-green-subtraction-v0.json"),
     );
+    if (policyFlag && isInside(repoDir, policyPath)) {
+      return write(
+        {
+          verdict: "INCOMPLETE",
+          reasonCode: "UNTRUSTED_POLICY_SOURCE",
+          human: "Policy path is inside the candidate repo. Trusted policy must live outside it.",
+          repo: repoDir,
+          baseSha: "",
+          headSha: "",
+          treeSha: "",
+          policyDigest: "",
+          findings: [],
+          duties: [],
+          fixPack: [],
+          signedAttestation: false,
+          productionSignerIsolated: false,
+        },
+        1,
+      );
+    }
     const loaded = loadPolicy(policyPath);
     const baseSha = arg("--base", argv);
     const headSha = arg("--head", argv);
@@ -105,14 +127,78 @@ export function main(argv = process.argv.slice(2)): number {
       );
     }
     const approvals: Approval[] = [];
-    const ah = arg("--approval-head", argv);
-    const ad = arg("--approval-digest", argv);
-    if (ah && ad) approvals.push({ headSha: ah, policyDigest: ad, note: "cli" });
+    if (arg("--approval-head", argv) || arg("--approval-digest", argv)) {
+      return write(
+        {
+          verdict: "INCOMPLETE",
+          reasonCode: "UNTRUSTED_APPROVAL_SOURCE",
+          human: "CLI approval flags are ignored. Use --approvals-file outside the candidate repo.",
+          repo: repoDir,
+          baseSha,
+          headSha,
+          treeSha: "",
+          policyDigest: loaded.digest,
+          findings: [],
+          duties: [],
+          fixPack: [],
+          signedAttestation: false,
+          productionSignerIsolated: false,
+        },
+        1,
+      );
+    }
+    const approvalsFile = arg("--approvals-file", argv);
+    if (approvalsFile) {
+      const resolved = resolve(approvalsFile);
+      if (isInside(repoDir, resolved)) {
+        return write(
+          {
+            verdict: "INCOMPLETE",
+            reasonCode: "UNTRUSTED_APPROVAL_SOURCE",
+            human: "Approvals file is inside the candidate repo.",
+            repo: repoDir,
+            baseSha,
+            headSha,
+            treeSha: "",
+            policyDigest: loaded.digest,
+            findings: [],
+            duties: [],
+            fixPack: [],
+            signedAttestation: false,
+            productionSignerIsolated: false,
+          },
+          1,
+        );
+      }
+      const parsed = JSON.parse(readFileSync(resolved, "utf8")) as Approval[];
+      approvals.push(...parsed);
+    }
 
     let priorEvidence: DutyEvidence[] | undefined;
     const priorPath = arg("--prior-evidence", argv);
     if (priorPath) {
-      priorEvidence = JSON.parse(readFileSync(priorPath, "utf8")) as DutyEvidence[];
+      const resolved = resolve(priorPath);
+      if (isInside(repoDir, resolved)) {
+        return write(
+          {
+            verdict: "INCOMPLETE",
+            reasonCode: "UNTRUSTED_EVIDENCE_SOURCE",
+            human: "Prior evidence file is inside the candidate repo.",
+            repo: repoDir,
+            baseSha,
+            headSha,
+            treeSha: "",
+            policyDigest: loaded.digest,
+            findings: [],
+            duties: [],
+            fixPack: [],
+            signedAttestation: false,
+            productionSignerIsolated: false,
+          },
+          1,
+        );
+      }
+      priorEvidence = JSON.parse(readFileSync(resolved, "utf8")) as DutyEvidence[];
     }
 
     const report = compile({

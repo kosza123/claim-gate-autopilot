@@ -3,9 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --experimental-strip-types --test --test-reporter=spec test/unit/*.test.ts test/integration/*.test.ts test/attack-matrix.test.ts test/ci-integrity.test.ts test/benchmark.test.ts",
+    "test": "node --experimental-strip-types --test --test-reporter=spec test/unit/*.test.ts test/integration/*.test.ts test/attack-matrix.test.ts test/cross-duty-tamper.test.ts test/ci-integrity.test.ts test/benchmark.test.ts",
     "test:unit": "node --experimental-strip-types --test test/unit/*.test.ts",
-    "test:integration": "node --experimental-strip-types --test test/integration/*.test.ts",
+    "test:integration": "node --experimental-strip-types --test test/integration/*.test.ts test/cross-duty-tamper.test.ts",
     "test:matrix": "node --experimental-strip-types --test test/attack-matrix.test.ts",
     "typecheck": "tsc --noEmit",
     "lint": "node scripts/lint.mjs",

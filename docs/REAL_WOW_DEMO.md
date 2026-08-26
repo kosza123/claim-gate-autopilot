@@ -69,9 +69,15 @@ A is green on L. B runs the same protected argv Autopilot would run, but against
 
 Klasp was pinned to `0.4.0` and did not run as a usable gate here (`KLASP_BASELINE_UNAVAILABLE`).
 
-## Attack matrix (26 + 3 guards)
+## Attack matrix (26 + 3 guards + cross-duty)
 
-All passed locally: 01–26, zero false ADMIT on L, ADMIT on honest R. See `test/attack-matrix.test.ts`.
+All passed locally: 01–26, zero false ADMIT on L, ADMIT on honest R, plus `test/cross-duty-tamper.test.ts`.
+
+## Isolation after audit (v0a-10)
+
+Each duty now gets a **fresh git-archive copy** of the head SHA. The copy is chmod `a-w`. Surface files are digested from the commit, before the duty, and after the duty. Mismatch → `CROSS_DUTY_TAMPER` / `REJECT`. CLI `--approval-head` is refused; approvals must come from a file **outside** the candidate tree.
+
+Network namespace isolation is **not** claimed (`sandboxNetworkIsolated=false`). Secrets are still dropped via env allowlist.
 
 ## What is still not real
 
@@ -83,14 +89,18 @@ requiredCheckEnforced=false
 productionSignerIsolated=false
 nonBypassable=false
 signedAttestation=false
-productAdvantageProven=true   # vs A and vs argv-only central CI on this fixture
-wowProven=true                # technical phrase above, not an agent-overnight story
+sandboxNetworkIsolated=false
+productAdvantageProven=false
+wowProven=false
 ```
 
-No GitHub App, no required check from an app, no human-out-of-loop repair adapter, no signed provenance.
+No GitHub App, no required check from an app, no signed provenance, no fair Klasp run.
 
 ## Gate
 
-`GREEN_BY_SUBTRACTION_TECHNICAL_PASS + PRODUCT_ADVANTAGE_SIGNAL`
+`CONTROLLED_FIXTURE_PASS + PRODUCT_ADVANTAGE_UNPROVEN`
 
-Next step (only): a GitHub App that owns the required check so the candidate workflow cannot skip the verifier. Do not merge this branch until that is separately approved.
+This is not a production gate. Arm B is not a fair stand-in for strong central CI; Klasp did not actually run. Do not treat `PRODUCT_ADVANTAGE_SIGNAL` as proven.
+
+Next step (only): fair comparison against a protected reusable workflow **and** a working Klasp pin, after this isolation stays green. Not a GitHub App yet. Do not merge.
+

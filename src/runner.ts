@@ -95,6 +95,9 @@ export function runDuty(opts: {
     timedOut,
     crashed,
     verdict,
+    committedDigest: "",
+    workspaceBeforeDigest: "",
+    workspaceAfterDigest: "",
   };
 }
 

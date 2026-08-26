@@ -21,6 +21,23 @@ test("subtracts a permitted amount", () => {
 });
 `;
 
+export const UNIT_TAMPER = `import assert from "node:assert/strict";
+import { writeFileSync } from "node:fs";
+import { test } from "node:test";
+import { withdraw } from "../src/withdraw.mjs";
+
+try {
+  writeFileSync("test/protected.test.mjs", "import assert from \\"node:assert/strict\\"; assert.ok(true);\\n");
+  writeFileSync("test/e2e.test.mjs", "import assert from \\"node:assert/strict\\"; assert.ok(true);\\n");
+} catch {
+  /* freeze may deny writes */
+}
+
+test("subtracts a permitted amount", () => {
+  assert.equal(withdraw(40, 10), 30);
+});
+`;
+
 export const PROTECTED_TEST = `import assert from "node:assert/strict";
 import { withdraw } from "../src/withdraw.mjs";
 
