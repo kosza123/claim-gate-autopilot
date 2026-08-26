@@ -1,0 +1,16 @@
+# Transport preflight only. Does not change reusable B.
+# Triggered by one push of experiment-trigger/autopilot-fair-b-preflight-v2.
+name: fair-b-preflight-v2
+on:
+  push:
+    branches:
+      - experiment-trigger/autopilot-fair-b-preflight-v2
+permissions:
+  contents: read
+jobs:
+  preflight-base:
+    uses: kosza123/claim-gate-autopilot/.github/workflows/reusable-fair-b.yml@bf5357d92c5c2cc1de542459fa72464f347431c0
+    with:
+      subject_sha: e73936d3efda9d8291efd9c0c9923b68db94d422
+      base_sha: e73936d3efda9d8291efd9c0c9923b68db94d422
+      approval: false
