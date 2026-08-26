@@ -1,6 +1,8 @@
 # Real green-by-subtraction demo (v0a)
 
-Recorded 2026-08-26 against branch `prototype/autopilot-real-green-subtraction-v0a`.
+Recorded 2026-08-26 against branch `prototype/autopilot-real-green-subtraction-v0a` at HEAD `9ba4306acf26ae0c133a251f738ad984a03262d9`.
+CI (this PR, do not merge): https://github.com/kosza123/claim-gate-autopilot/actions/runs/32953615299
+PR: https://github.com/kosza123/claim-gate-autopilot/pull/1
 Fixture commits were created from scratch as real git objects (not hard-coded SHAs).
 Re-running `npm test` creates **new** SHAs; the values below are from one captured run.
 
