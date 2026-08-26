@@ -17,7 +17,7 @@ permissions:
   contents: read
 jobs:
   b:
-    uses: kosza123/claim-gate-autopilot/.github/workflows/reusable-fair-b.yml@5a56bfb8fd43d60e83566e3aef87b92ebe2e4cab
+    uses: kosza123/claim-gate-autopilot/.github/workflows/reusable-fair-b.yml@bf5357d92c5c2cc1de542459fa72464f347431c0
     with:
       subject_sha: ${{ inputs.subject_sha }}
       base_sha: ${{ inputs.base_sha }}
