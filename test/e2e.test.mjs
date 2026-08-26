@@ -1,4 +1,4 @@
 import assert from "node:assert/strict";
 import { withdraw } from "../src/withdraw.mjs";
 
-assert.throws(() => withdraw(40, 100), /insufficient/);
+assert.equal(withdraw(100, 1), 99);

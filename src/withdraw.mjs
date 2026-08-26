@@ -1,3 +1,5 @@
 export function withdraw(balance, amount) {
-  return Number(balance) - Number(amount);
+  const next = Number(balance) - Number(amount);
+  if (!Number.isFinite(next) || next < 0) throw new Error("insufficient funds");
+  return next;
 }
