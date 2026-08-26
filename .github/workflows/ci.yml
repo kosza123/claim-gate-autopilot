@@ -1,0 +1,27 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches:
+      - experiment/completion-loop-real-utility-v0
+      - experiment/completion-loop-native-v0
+      - experiment/completion-loop-autopilot-v0
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - run: node --test test/unit.test.mjs
+      - run: node test/e2e.test.mjs
+      - run: node test/protected.test.mjs
+      - run: node oracle/run.mjs --impl src/clinic.mjs --out /tmp/oracle-out --head "${{ github.sha }}"
