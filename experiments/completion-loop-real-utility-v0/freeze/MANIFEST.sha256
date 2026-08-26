@@ -1,11 +1,11 @@
-# SHA-256 manifest completion-loop freeze v0c
+# SHA-256 manifest completion-loop freeze v0d
 # trusted harness + 17 fixtures; does not hash this file
 
 466fad4c31702f4e151747e2729d83725801465cc087b272e314d6f1a7d24032  oracle/policy.json
 789becfb81f9b94870eb96c63cf82a7540c1edee998d5f7107dba5b73749497b  oracle/model.mjs
 8879646fc8809eec37423562655fb0d3f8a056ca3108c9e49454dbfe14bcb8b1  oracle/commands.mjs
 45581a9cca5966e4c81676e46baed8b137bc9ef834afe9476180876722f99f19  oracle/compare.mjs
-65f44a2e436e5cb22a6a7cca06984a518bb17ca5a47b5a046c80458343934c87  oracle/run.mjs
+219a3f339fdb7659f0d396dec127cb9a298457c114e8adf098d416a740506602  oracle/run.mjs
 8aa1462d19f8815eeb3cb28600430f2e6d7b7e83f9eece7b3196458e9a59ed3e  oracle/fc-extra.mjs
 789affad78e30bdac808d3981e9a01e2c541c74b42c680d49f8b51e19a509af7  src/clinic.mjs
 683040eeba7a6e150a313d8077b695439f8a75a42fa68cd30a721ba0b6f33fc2  src/clinic-eventlog.mjs
