@@ -1,0 +1,8 @@
+{
+  "name": "fixture-product",
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/unit.test.mjs test/protected.test.mjs",
+    "e2e": "node test/e2e.test.mjs"
+  }
+}

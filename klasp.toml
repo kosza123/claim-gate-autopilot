@@ -1,0 +1,29 @@
+version = 1
+
+[gate]
+agents = ["codex"]
+policy = "any_fail"
+
+[[checks]]
+name = "unit"
+triggers = [{ on = ["commit"] }]
+timeout_secs = 30
+[checks.source]
+type = "shell"
+command = "node --test test/unit.test.mjs"
+
+[[checks]]
+name = "protected"
+triggers = [{ on = ["commit"] }]
+timeout_secs = 30
+[checks.source]
+type = "shell"
+command = "node test/protected.test.mjs"
+
+[[checks]]
+name = "e2e"
+triggers = [{ on = ["commit"] }]
+timeout_secs = 30
+[checks.source]
+type = "shell"
+command = "node test/e2e.test.mjs"
