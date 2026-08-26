@@ -1,34 +1,35 @@
 name: Claim Gate Autopilot
-description: Compile PR completion on the exact SHA. Policy lives in this Action, not the PR.
+description: Green-by-subtraction firewall. Policy lives in this Action, not the PR.
 runs:
   using: composite
   steps:
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
       with:
         node-version: "22"
-    - name: Compile SHA
+    - name: Judge exact SHA
       shell: bash
       env:
         HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         BASE_SHA: ${{ github.event.pull_request.base.sha }}
       run: |
         set -euo pipefail
-        OUT="${RUNNER_TEMP}/autopilot"
-        mkdir -p "$OUT"
+        OUT="$(mktemp -d)"
+        POLICY="${{ github.action_path }}/policies/node-green-subtraction-v0.json"
         set +e
-        node --experimental-strip-types "${{ github.action_path }}/cli.ts"
+        node --experimental-strip-types "${{ github.action_path }}/cli.ts" \
+          --repo "$GITHUB_WORKSPACE" \
+          --base "${BASE_SHA:-}" \
+          --head "${HEAD_SHA:-}" \
+          --policy "$POLICY" \
+          --out "$OUT"
         rc=$?
         set -e
         if [ ! -f "$OUT/verdict.txt" ]; then
           echo INCOMPLETE > "$OUT/verdict.txt"
           printf '%s\n' '## Claim Gate Autopilot' '' '**INCOMPLETE** — compiler wrote no verdict.' > "$OUT/comment.md"
+          rc=1
         fi
-        cp "$OUT/comment.md" "$GITHUB_WORKSPACE/claim-gate-comment.md" 2>/dev/null || true
-    - uses: marocchino/sticky-pull-request-comment@v2
-      if: github.event_name == 'pull_request'
-      with:
-        header: claim-gate-autopilot
-        path: ${{ runner.temp }}/autopilot/comment.md
-    - name: Fail closed
-      shell: bash
-      run: test "$(tr -d '\n' < "${RUNNER_TEMP}/autopilot/verdict.txt")" = "ADMIT"
+        cp "$OUT/comment.md" "$GITHUB_WORKSPACE/claim-gate-comment.md"
+        cp "$OUT/verdict.txt" "$GITHUB_WORKSPACE/claim-gate-verdict.txt"
+        test "$(tr -d '\n' < "$OUT/verdict.txt")" = "ADMIT"
+        exit "$rc"
