@@ -1,0 +1,34 @@
+name: Claim Gate Autopilot
+description: Compile PR completion on the exact SHA. Policy lives in this Action, not the PR.
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: "22"
+    - name: Compile SHA
+      shell: bash
+      env:
+        HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        BASE_SHA: ${{ github.event.pull_request.base.sha }}
+      run: |
+        set -euo pipefail
+        OUT="${RUNNER_TEMP}/autopilot"
+        mkdir -p "$OUT"
+        set +e
+        node --experimental-strip-types "${{ github.action_path }}/cli.ts"
+        rc=$?
+        set -e
+        if [ ! -f "$OUT/verdict.txt" ]; then
+          echo INCOMPLETE > "$OUT/verdict.txt"
+          printf '%s\n' '## Claim Gate Autopilot' '' '**INCOMPLETE** — compiler wrote no verdict.' > "$OUT/comment.md"
+        fi
+        cp "$OUT/comment.md" "$GITHUB_WORKSPACE/claim-gate-comment.md" 2>/dev/null || true
+    - uses: marocchino/sticky-pull-request-comment@v2
+      if: github.event_name == 'pull_request'
+      with:
+        header: claim-gate-autopilot
+        path: ${{ runner.temp }}/autopilot/comment.md
+    - name: Fail closed
+      shell: bash
+      run: test "$(tr -d '\n' < "${RUNNER_TEMP}/autopilot/verdict.txt")" = "ADMIT"
