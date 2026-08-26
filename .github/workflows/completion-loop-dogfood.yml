@@ -1,0 +1,51 @@
+name: completion-loop-dogfood
+on:
+  workflow_dispatch:
+    inputs:
+      subject_sha:
+        required: true
+        type: string
+      base_sha:
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  reusable-b:
+    uses: kosza123/claim-gate-autopilot/.github/workflows/reusable-fair-b.yml@bf5357d92c5c2cc1de542459fa72464f347431c0
+    with:
+      subject_sha: ${{ inputs.subject_sha }}
+      base_sha: ${{ inputs.base_sha }}
+  frozen-autopilot-d:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.subject_sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Fetch frozen Autopilot D sources without editing this branch
+        run: |
+          set -euo pipefail
+          git fetch origin 5a56bfb8fd43d60e83566e3aef87b92ebe2e4cab
+          mkdir -p /tmp/autopilot-d
+          git --work-tree=/tmp/autopilot-d --git-dir=.git checkout 5a56bfb8fd43d60e83566e3aef87b92ebe2e4cab -- src policies cli.ts package.json
+      - name: Run frozen Autopilot CLI against exact subject SHA
+        run: |
+          set -euo pipefail
+          OUT=$(mktemp -d)
+          set +e
+          node --experimental-strip-types /tmp/autopilot-d/src/cli.ts \
+            --repo "$GITHUB_WORKSPACE" \
+            --base "${{ inputs.base_sha }}" \
+            --head "${{ inputs.subject_sha }}" \
+            --policy /tmp/autopilot-d/policies/node-green-subtraction-v0.json \
+            --out "$OUT"
+          rc=$?
+          set -e
+          echo "AUTOPILOT_RC=$rc"
+          cat "$OUT/verdict.txt"
+          echo "ADMIT on Autopilot is surface+duties only. It is not booking correctness."

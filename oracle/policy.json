@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "booking-oracle-v0",
+  "domain": "appointment-booking",
+  "invariants": [
+    { "id": "I1_UNIQUE_ACTIVE_SLOT", "text": "One slot cannot have two active bookings." },
+    { "id": "I2_EXACT_REPLAY_IDEMPOTENT", "text": "Exact request replay is idempotent." },
+    { "id": "I3_REQUEST_PAYLOAD_CONFLICT", "text": "Same requestId with different payload conflicts and does not change state." },
+    { "id": "I4_NO_CONFIRM_AFTER_CANCEL", "text": "A cancelled booking cannot later be confirmed." },
+    { "id": "I5_MISSING_BOOKING_NO_MUTATION", "text": "An operation on a missing booking cannot change state." },
+    { "id": "I6_FAILED_OP_ATOMIC", "text": "A failed operation cannot leave a partial mutation." }
+  ],
+  "operations": ["book", "cancel", "confirm", "replay"],
+  "implPath": "src/clinic.mjs",
+  "numRuns": 80,
+  "maxCommands": 8,
+  "timeoutMs": 20000,
+  "seed": 20452045
+}
