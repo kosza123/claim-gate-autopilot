@@ -1,0 +1,40 @@
+# SHA-256 manifest completion-loop freeze v0c
+# trusted harness + 17 fixtures; does not hash this file
+
+466fad4c31702f4e151747e2729d83725801465cc087b272e314d6f1a7d24032  oracle/policy.json
+789becfb81f9b94870eb96c63cf82a7540c1edee998d5f7107dba5b73749497b  oracle/model.mjs
+8879646fc8809eec37423562655fb0d3f8a056ca3108c9e49454dbfe14bcb8b1  oracle/commands.mjs
+45581a9cca5966e4c81676e46baed8b137bc9ef834afe9476180876722f99f19  oracle/compare.mjs
+65f44a2e436e5cb22a6a7cca06984a518bb17ca5a47b5a046c80458343934c87  oracle/run.mjs
+8aa1462d19f8815eeb3cb28600430f2e6d7b7e83f9eece7b3196458e9a59ed3e  oracle/fc-extra.mjs
+789affad78e30bdac808d3981e9a01e2c541c74b42c680d49f8b51e19a509af7  src/clinic.mjs
+683040eeba7a6e150a313d8077b695439f8a75a42fa68cd30a721ba0b6f33fc2  src/clinic-eventlog.mjs
+b8e6d2674bf38d3d621b73bef63554896f4dc15b5a87de708e7839c35d2c5474  package.json
+54d6c3a9eb247d94851d9d05ee73ad8bd3b07d1c64f41bb19cd79ab66b6e444f  package-lock.json
+14df8c9c35e196e1baa23b0ecc7335d7059047bb1719142e4b43a3eee246b106  experiments/completion-loop-real-utility-v0/arms/NATIVE.md
+e13ccaf694f9638b418f23c89c26c1bec2cb1b52fbcfc1c06584c04272d97a04  experiments/completion-loop-real-utility-v0/arms/AUTOPILOT.md
+a4ef3538d342cc011de8175c4aaada9c69521e20f89169f80fb9cf91651d53da  experiments/completion-loop-real-utility-v0/arms/SCORECARD.json
+789affad78e30bdac808d3981e9a01e2c541c74b42c680d49f8b51e19a509af7  experiments/completion-loop-real-utility-v0/fixtures/good/g1-map-store.mjs
+683040eeba7a6e150a313d8077b695439f8a75a42fa68cd30a721ba0b6f33fc2  experiments/completion-loop-real-utility-v0/fixtures/good/g2-event-log.mjs
+2f46ff67f42d6bf93ffb495e5e736a6893ddbfa3254949e577f4eeb254ff4937  experiments/completion-loop-real-utility-v0/fixtures/good/g3-map-store-logged.mjs
+70670759a1b4f010cdd656d7eb0190913b4afd4d3e9f5bb5e72ce0ecf7739f7f  experiments/completion-loop-real-utility-v0/fixtures/good/g4-event-log-cached.mjs
+27c6ef551d251f3946d238b0ea312d7fd5af8af38ccc7206b9ce0136fb0b7fbf  experiments/completion-loop-real-utility-v0/fixtures/good/g5-map-store-frozen-snap.mjs
+ae7ff11a80cc922b8047af139d070221fd71e329d70d299b9996c1a1df9ddc9a  experiments/completion-loop-real-utility-v0/fixtures/mutants/m01-double-slot.mjs
+0397a13355ee35f35061f3af32af4313db7fdda24572f9e3506acfdc4266f339  experiments/completion-loop-real-utility-v0/fixtures/mutants/m02-replay-not-idempotent.mjs
+a682402500b40a5f28b777e26fffeae554651dda73fc9fb17acbd184beed9933  experiments/completion-loop-real-utility-v0/fixtures/mutants/m03-request-payload-mutates.mjs
+c67ef00a261b91884206e262e45b02f349017a3996e5cb4b6f427b93576479b0  experiments/completion-loop-real-utility-v0/fixtures/mutants/m04-confirm-after-cancel.mjs
+2f8905f8b7468d59d88ff894e468f0d969be1ddaa8dab769fdb6faabaf2214f9  experiments/completion-loop-real-utility-v0/fixtures/mutants/m05-missing-cancel-creates.mjs
+68cf84638f1013835e43617b6b4fd8e37f66c9e65e1e8b75331642a861d7bd53  experiments/completion-loop-real-utility-v0/fixtures/mutants/m06-partial-book-crash.mjs
+b33ede7e86acf15ae80296da9d0cf340c6eca06d809dd2f335074ca73c7e8462  experiments/completion-loop-real-utility-v0/fixtures/mutants/m07-confirm-missing-creates.mjs
+3140dbdb6b51af043f1010177a72da68058e73076e1345012d7d143195add712  experiments/completion-loop-real-utility-v0/fixtures/mutants/m08-cancel-keeps-slot.mjs
+d65e8eea34c265d834b61132147839cf78f5d8e4e865d6b0ede49a68d5f4f1ea  experiments/completion-loop-real-utility-v0/fixtures/mutants/m09-replay-ignores-patient.mjs
+44c9851985bc64b5b0244fe2791d5452465798defe5802c34ff04e844602ab0f  experiments/completion-loop-real-utility-v0/fixtures/mutants/m10-steal-occupied-slot.mjs
+0c0bb6ba411e0c46089eb8c321fdde57bb217d5d19f595b4e204ee936bfb3395  experiments/completion-loop-real-utility-v0/fixtures/mutants/m11-conflict-still-books.mjs
+abea3e99033fdd807306332d5b8f6273c89e825987ff86d801825e1a936fcac2  experiments/completion-loop-real-utility-v0/fixtures/mutants/m12-cancel-confirm-partial.mjs
+0686b193d3ab3b1ef7708ff0103bf39db5d080c2d0864e63a99165cd6cfc66d3  experiments/completion-loop-real-utility-v0/freeze/CATALOG.json
+bf004f621fdecaaa304021b3160171e1e2acea90eada18527182edc9e4cd286a  experiments/completion-loop-real-utility-v0/freeze/EQUALITY.md
+936f5ec2abf1e4bdb8684085a37a01c3281ddfd33988cf3f53f531d9959cc32f  experiments/completion-loop-real-utility-v0/freeze/FLAGS.json
+9ff0662fdcf43ecf7ddc04ec16bdb4358b2d4bb3ef9e1cade5b112846540104b  experiments/completion-loop-real-utility-v0/freeze/ISOLATION.md
+bac88789c88c3f32a7e69c7a4d1d059a54d93c37194b0df0446cf545521b66ca  experiments/completion-loop-real-utility-v0/freeze/ORDERS.json
+aa1f433e7bfb454b2af0d436ee7f97275dec866a4b6920fdd55fe0a6071ec912  experiments/completion-loop-real-utility-v0/freeze/UNIT.md
+a45467fcaad9808bb12c8a81fc9fe24294108a6b3bd12a1c35f5d7f6792c2a86  experiments/completion-loop-real-utility-v0/freeze/check-catalog.mjs

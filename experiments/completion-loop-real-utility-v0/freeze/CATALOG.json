@@ -1,0 +1,288 @@
+{
+  "schema": "completion-loop-cases-v0c",
+  "datasetNote": "v0c transports missing v0b fixtures/catalog/manifest only. Dataset bytes unchanged except files that were never on remote. Oracle/policy/model/generator/m01-m12/g1-g5 protocols/orders untouched in this commit except adding previously missing fixture blobs.",
+  "oraclePolicySha256": "466fad4c31702f4e151747e2729d83725801465cc087b272e314d6f1a7d24032",
+  "v0b": "d890500ed271ea63927d509b06fabe2b5b639ea6",
+  "cases": [
+    {
+      "id": "m01-double-slot",
+      "kind": "defective",
+      "path": "experiments/completion-loop-real-utility-v0/fixtures/mutants/m01-double-slot.mjs",
+      "sha256": "ae7ff11a80cc922b8047af139d070221fd71e329d70d299b9996c1a1df9ddc9a",
+      "bytes": 3256,
+      "parent": "map-store",
+      "declaredInvariant": "I1_UNIQUE_ACTIVE_SLOT",
+      "observedOracle": "REJECT/I1_UNIQUE_ACTIVE_SLOT",
+      "identicalToParent": false,
+      "diffVsParentCount": 2,
+      "diffVsParentPreview": [
+        "-      if (occ && (occ.status === \"pending\" || occ.status === \"confirmed\")) {",
+        "+      if (false && occ && (occ.status === \"pending\" || occ.status === \"confirmed\")) {"
+      ]
+    },
+    {
+      "id": "m02-replay-not-idempotent",
+      "kind": "defective",
+      "path": "experiments/completion-loop-real-utility-v0/fixtures/mutants/m02-replay-not-idempotent.mjs",
+      "sha256": "0397a13355ee35f35061f3af32af4313db7fdda24572f9e3506acfdc4266f339",
+      "bytes": 3256,
+      "parent": "map-store",
+      "declaredInvariant": "I2_EXACT_REPLAY_IDEMPOTENT",
+      "observedOracle": "REJECT/I2_EXACT_REPLAY_IDEMPOTENT",
+      "identicalToParent": false,
+      "diffVsParentCount": 2,
+      "diffVsParentPreview": [
+        "-    if (seen) {",
+        "+    if (false && seen) {"
+      ]
+    },
+    {
+      "id": "m03-request-payload-mutates",
+      "kind": "defective",
+      "path": "experiments/completion-loop-real-utility-v0/fixtures/mutants/m03-request-payload-mutates.mjs",
+      "sha256": "a682402500b40a5f28b777e26fffeae554651dda73fc9fb17acbd184beed9933",
+      "bytes": 3184,
+      "parent": "map-store",
+      "declaredInvariant": "I3_REQUEST_PAYLOAD_CONFLICT",
+      "observedOracle": "REJECT/I3_REQUEST_PAYLOAD_CONFLICT",
+      "identicalToParent": false,
+      "diffVsParentCount": 1,
+      "diffVsParentPreview": [
+        "-      return { ok: false, code: \"CONFLICT\", bookingId: null };"
+      ]
+    },
+    {
+      "id": "m04-confirm-after-cancel",
+      "kind": "defective",
+      "path": "experiments/completion-loop-real-utility-v0/fixtures/mutants/m04-confirm-after-cancel.mjs",
+      "sha256": "c67ef00a261b91884206e262e45b02f349017a3996e5cb4b6f427b93576479b0",
+      "bytes": 3281,
+      "parent": "map-store",
+      "declaredInvariant": "I4_NO_CONFIRM_AFTER_CANCEL",
+      "observedOracle": "REJECT/I4_NO_CONFIRM_AFTER_CANCEL",
+      "identicalToParent": false,
+      "diffVsParentCount": 2,
+      "diffVsParentPreview": [
+        "-      else if (booking.status === \"cancelled\") result = { ok: false, code: \"CONFLICT\", bookingId: booking.id };",
+        "+      else if (booking.status === \"cancelled\") { booking.status = \"confirmed\"; result = { ok: true, code: \"CONFIRMED\", bookingId: booking.id }; }"
+      ]
+    },
+    {
+      "id": "m05-missing-cancel-creates",
+      "kind": "defective",
+      "path": "experiments/completion-loop-real-utility-v0/fixtures/mutants/m05-missing-cancel-creates.mjs",
+      "sha256": "2f8905f8b7468d59d88ff894e468f0d969be1ddaa8dab769fdb6faabaf2214f9",
+      "bytes": 3396,
+      "parent": "map-store",
+      "declaredInvariant": "I5_MISSING_BOOKING_NO_MUTATION",
+      "observedOracle": "REJECT/I5_MISSING_BOOKING_NO_MUTATION",
+      "identicalToParent": false,
+      "diffVsParentCount": 6,
+      "diffVsParentPreview": [
+        "-      if (!booking) result = { ok: false, code: \"NOT_FOUND\", bookingId: null };",
+        "-      else {",
+        "+      if (!booking) {",
+        "+        working.bookings.set(input.bookingId, { id: input.bookingId, slotId: \"sX\", patientId: \"ghost\", status: \"cancelled\" });",
+        "+        result = { ok: true, code: \"CANCELLED\", bookingId: input.bookingId };",
+        "+      } else {"
+      ]
+    },
+    {
+      "id": "m06-partial-book-crash",
+      "kind": "defective",
+      "path": "experiments/completion-loop-real-utility-v0/fixtures/mutants/m06-partial-book-crash.mjs",
+      "sha256": "68cf84638f1013835e43617b6b4fd8e37f66c9e65e1e8b75331642a861d7bd53",
+      "bytes": 3325,
+      "parent": "map-store",
+      "declaredInvariant": "I6_FAILED_OP_ATOMIC",
+      "observedOracle": "REJECT/I6_FAILED_OP_ATOMIC",
+      "identicalToParent": false,
+      "diffVsParentCount": 4,
+      "diffVsParentPreview": [
+        "+        working.slotOwner.set(input.slotId, bookingId);",
+        "+        state = working;",
+        "+        throw new Error(\"simulated mid-book crash\");",
+        "-        working.slotOwner.set(input.slotId, bookingId);"
+      ]
+    },
+    {
+      "id": "m07-confirm-missing-creates",
+      "kind": "defective",
+      "path": "experiments/completion-loop-real-utility-v0/fixtures/mutants/m07-confirm-missing-creates.mjs",
+      "sha256": "b33ede7e86acf15ae80296da9d0cf340c6eca06d809dd2f335074ca73c7e8462",
+      "bytes": 3393,
+      "parent": "map-store",
+      "declaredInvariant": "I5_MISSING_BOOKING_NO_MUTATION",
+      "observedOracle": "REJECT/I5_MISSING_BOOKING_NO_MUTATION",
+      "identicalToParent": false,
+      "diffVsParentCount": 6,
+      "diffVsParentPreview": [
+        "-      if (!booking) result = { ok: false, code: \"NOT_FOUND\", bookingId: null };",
+        "-      else if (booking.status === \"cancelled\") result = { ok: false, code: \"CONFLICT\", bookingId: booking.id };",
+        "+      if (!booking) {",
+        "+        working.bookings.set(input.bookingId, { id: input.bookingId, slotId: \"s1\", patientId: \"pX\", status: \"confirmed\" });",
+        "+        result = { ok: true, code: \"CONFIRMED\", bookingId: input.bookingId };",
+        "+      } else if (booking.status === \"cancelled\") result = { ok: false, code: \"CONFLICT\", bookingId: booking.id };"
+      ]
+    },
+    {
+      "id": "m08-cancel-keeps-slot",
+      "kind": "defective",
+      "path": "experiments/completion-loop-real-utility-v0/fixtures/mutants/m08-cancel-keeps-slot.mjs",
+      "sha256": "3140dbdb6b51af043f1010177a72da68058e73076e1345012d7d143195add712",
+      "bytes": 3181,
+      "parent": "map-store",
+      "declaredInvariant": "I6_FAILED_OP_ATOMIC",
+      "observedOracle": "REJECT/I6_FAILED_OP_ATOMIC",
+      "identicalToParent": false,
+      "diffVsParentCount": 2,
+      "diffVsParentPreview": [
+        "-          if (working.slotOwner.get(booking.slotId) === booking.id) working.slotOwner.delete(booking.slotId);",
+        "+          /* mutant: leave slot occupied */"
+      ]
+    },
+    {
+      "id": "m09-replay-ignores-patient",
+      "kind": "defective",
+      "path": "experiments/completion-loop-real-utility-v0/fixtures/mutants/m09-replay-ignores-patient.mjs",
+      "sha256": "d65e8eea34c265d834b61132147839cf78f5d8e4e865d6b0ede49a68d5f4f1ea",
+      "bytes": 3225,
+      "parent": "map-store",
+      "declaredInvariant": "I3_REQUEST_PAYLOAD_CONFLICT",
+      "observedOracle": "REJECT/I3_REQUEST_PAYLOAD_CONFLICT",
+      "identicalToParent": false,
+      "diffVsParentCount": 2,
+      "diffVsParentPreview": [
+        "-      if (seen.op === op && same(seen.args, a)) return { ...seen.result };",
+        "+      if (seen.op === op) return { ...seen.result };"
+      ]
+    },
+    {
+      "id": "m10-steal-occupied-slot",
+      "kind": "defective",
+      "path": "experiments/completion-loop-real-utility-v0/fixtures/mutants/m10-steal-occupied-slot.mjs",
+      "sha256": "44c9851985bc64b5b0244fe2791d5452465798defe5802c34ff04e844602ab0f",
+      "bytes": 3460,
+      "parent": "map-store",
+      "declaredInvariant": "I1_UNIQUE_ACTIVE_SLOT",
+      "observedOracle": "REJECT/I1_UNIQUE_ACTIVE_SLOT",
+      "identicalToParent": false,
+      "diffVsParentCount": 5,
+      "diffVsParentPreview": [
+        "-        result = { ok: false, code: \"CONFLICT\", bookingId: null };",
+        "+        working.slotOwner.set(input.slotId, requestId);",
+        "+        const bookingId = requestId;",
+        "+        working.bookings.set(bookingId, { id: bookingId, slotId: input.slotId, patientId: input.patientId, status: \"pending\" });",
+        "+        result = { ok: true, code: \"BOOKED\", bookingId };"
+      ]
+    },
+    {
+      "id": "m11-conflict-still-books",
+      "kind": "defective",
+      "path": "experiments/completion-loop-real-utility-v0/fixtures/mutants/m11-conflict-still-books.mjs",
+      "sha256": "0c0bb6ba411e0c46089eb8c321fdde57bb217d5d19f595b4e204ee936bfb3395",
+      "bytes": 3266,
+      "parent": "map-store",
+      "declaredInvariant": "I3_REQUEST_PAYLOAD_CONFLICT",
+      "observedOracle": "REJECT/I3_REQUEST_PAYLOAD_CONFLICT",
+      "identicalToParent": false,
+      "diffVsParentCount": 2,
+      "diffVsParentPreview": [
+        "-      return { ok: false, code: \"CONFLICT\", bookingId: null };",
+        "+      if (op !== \"book\") return { ok: false, code: \"CONFLICT\", bookingId: null };"
+      ]
+    },
+    {
+      "id": "m12-cancel-confirm-partial",
+      "kind": "defective",
+      "path": "experiments/completion-loop-real-utility-v0/fixtures/mutants/m12-cancel-confirm-partial.mjs",
+      "sha256": "abea3e99033fdd807306332d5b8f6273c89e825987ff86d801825e1a936fcac2",
+      "bytes": 3281,
+      "parent": "map-store",
+      "declaredInvariant": "I4_NO_CONFIRM_AFTER_CANCEL",
+      "observedOracle": "REJECT/I4_NO_CONFIRM_AFTER_CANCEL",
+      "identicalToParent": false,
+      "diffVsParentCount": 2,
+      "diffVsParentPreview": [
+        "-      else if (booking.status === \"cancelled\") result = { ok: false, code: \"CONFLICT\", bookingId: booking.id };",
+        "+      else if (booking.status === \"cancelled\") { booking.status = \"confirmed\"; result = { ok: false, code: \"CONFLICT\", bookingId: booking.id }; }"
+      ]
+    },
+    {
+      "id": "g1-map-store",
+      "kind": "good",
+      "path": "experiments/completion-loop-real-utility-v0/fixtures/good/g1-map-store.mjs",
+      "sha256": "789affad78e30bdac808d3981e9a01e2c541c74b42c680d49f8b51e19a509af7",
+      "bytes": 3247,
+      "parent": "map-store",
+      "declaredInvariant": "ADMIT",
+      "observedOracle": "ADMIT/ALL_INVARIANTS_HELD",
+      "identicalToParent": true,
+      "diffVsParentCount": 0,
+      "diffVsParentPreview": []
+    },
+    {
+      "id": "g2-event-log",
+      "kind": "good",
+      "path": "experiments/completion-loop-real-utility-v0/fixtures/good/g2-event-log.mjs",
+      "sha256": "683040eeba7a6e150a313d8077b695439f8a75a42fa68cd30a721ba0b6f33fc2",
+      "bytes": 3611,
+      "parent": "event-log",
+      "declaredInvariant": "ADMIT",
+      "observedOracle": "ADMIT/ALL_INVARIANTS_HELD",
+      "identicalToParent": true,
+      "diffVsParentCount": 0,
+      "diffVsParentPreview": []
+    },
+    {
+      "id": "g3-map-store-logged",
+      "kind": "good",
+      "path": "experiments/completion-loop-real-utility-v0/fixtures/good/g3-map-store-logged.mjs",
+      "sha256": "2f46ff67f42d6bf93ffb495e5e736a6893ddbfa3254949e577f4eeb254ff4937",
+      "bytes": 3299,
+      "parent": "map-store",
+      "declaredInvariant": "ADMIT",
+      "observedOracle": "ADMIT/ALL_INVARIANTS_HELD",
+      "identicalToParent": false,
+      "diffVsParentCount": 2,
+      "diffVsParentPreview": [
+        "-    return { ...result };",
+        "+    return { ok: result.ok, code: result.code, bookingId: result.bookingId };"
+      ]
+    },
+    {
+      "id": "g4-event-log-cached",
+      "kind": "good",
+      "path": "experiments/completion-loop-real-utility-v0/fixtures/good/g4-event-log-cached.mjs",
+      "sha256": "70670759a1b4f010cdd656d7eb0190913b4afd4d3e9f5bb5e72ce0ecf7739f7f",
+      "bytes": 3649,
+      "parent": "event-log",
+      "declaredInvariant": "ADMIT",
+      "observedOracle": "ADMIT/ALL_INVARIANTS_HELD",
+      "identicalToParent": false,
+      "diffVsParentCount": 2,
+      "diffVsParentPreview": [
+        "+  let cache = null;",
+        "+    cache = null;"
+      ]
+    },
+    {
+      "id": "g5-map-store-frozen-snap",
+      "kind": "good",
+      "path": "experiments/completion-loop-real-utility-v0/fixtures/good/g5-map-store-frozen-snap.mjs",
+      "sha256": "27c6ef551d251f3946d238b0ea312d7fd5af8af38ccc7206b9ce0136fb0b7fbf",
+      "bytes": 3262,
+      "parent": "map-store",
+      "declaredInvariant": "ADMIT",
+      "observedOracle": "ADMIT/ALL_INVARIANTS_HELD",
+      "identicalToParent": false,
+      "diffVsParentCount": 4,
+      "diffVsParentPreview": [
+        "-    return {",
+        "+    return Object.freeze({",
+        "-    };",
+        "+    });"
+      ]
+    }
+  ]
+}
