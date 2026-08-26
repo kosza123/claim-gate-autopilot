@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "node-green-subtraction-v0",
+  "duties": [
+    {
+      "id": "unit",
+      "argv": ["node", "--test", "test/unit.test.mjs"],
+      "timeoutMs": 20000
+    },
+    {
+      "id": "protected",
+      "argv": ["node", "test/protected.test.mjs"],
+      "timeoutMs": 20000,
+      "protected": true
+    },
+    {
+      "id": "e2e",
+      "argv": ["node", "test/e2e.test.mjs"],
+      "timeoutMs": 20000,
+      "e2e": true
+    }
+  ],
+  "protectedPaths": [
+    "test/protected.test.mjs",
+    "test/e2e.test.mjs"
+  ],
+  "evidenceSurface": [
+    "test/",
+    "package.json",
+    ".github/workflows/",
+    "coverage-threshold.json"
+  ],
+  "coverageThresholdPath": "coverage-threshold.json",
+  "unapprovedSurfaceChange": "INCOMPLETE_POLICY_SURFACE_CHANGE_REQUIRES_APPROVAL"
+}

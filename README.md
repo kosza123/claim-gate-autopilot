@@ -1,24 +1,29 @@
 # Claim Gate Autopilot
 
-Leave the agent on the task. Autopilot independently finds gaps, sends a machine-readable fix pack, and calls a human only when the exact SHA has complete duties.
+Green-by-subtraction firewall for GitHub PRs.
 
-The JSON judge (`kosza123/claim-gate`) is frozen as DEMO_ONLY.
+A candidate may turn its own CI green by deleting, skipping, or weakening tests.
+This verifier uses a **trusted policy outside the PR**, checks the evidence surface
+against the base SHA, and **executes** protected argv on a clean copy of the
+exact head commit.
 
-## What this is
+The JSON judge in `kosza123/claim-gate` is frozen as DEMO_ONLY.
 
-A PR completion compiler. Not an AI-truth detector. Not more `claim.json` fields.
+## Honest status
 
-Trusted: this Action + `compiler.ts`. Untrusted: the PR.
+See `docs/V0A_BASELINE.md` and `docs/REAL_WOW_DEMO.md` on
+`prototype/autopilot-real-green-subtraction-v0a`.
 
-Missing data, a crash, a skipped protected test, a mutated workflow, or a stale SHA → `INCOMPLETE` or `REJECT`. Never a silent ADMIT.
+Label: **CONTROLLED_FIXTURE_PASS + PRODUCT_ADVANTAGE_UNPROVEN**.
+Not a GitHub App. Not production-ready. Not non-bypassable.
 
-## Pin
+## Run
 
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-    - uses: kosza123/claim-gate-autopilot@PIN_SHA
+```
+npm ci
+npm test
+```
 
-## Demo
-
-    AUTOPILOT_DEMO=lying node --experimental-strip-types cli.ts
+Policy: `policies/node-green-subtraction-v0.json`  
+Compiler: `src/compiler.ts`  
+CLI writes **only** to `--out` (mktemp). Repository `out/` is not evidence.

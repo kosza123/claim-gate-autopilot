@@ -2,27 +2,58 @@ name: Autopilot
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, prototype/autopilot-real-green-subtraction-v0a]
 permissions:
   contents: read
-  pull-requests: write
 jobs:
   gate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: "22"
-      - name: Fixture — lying SHA must REJECT
-        env:
-          AUTOPILOT_DEMO: lying
+          cache: npm
+      - name: Install from lockfile
+        run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+      - name: Unit
+        run: npm run test:unit
+      - name: Integration / real git lifecycle
+        run: npm run test:integration
+      - name: Attack matrix + output poisoning
+        run: npm run test:matrix
+      - name: Full suite including benchmark
+        run: npm test
+      - name: Build
+        run: npm run build
+      - name: Secret/canary scan
+        run: npm run scan
+      - name: No committed out/
         run: |
+          if git ls-files | grep -E '^out(/|$)'; then
+            echo "committed out/ is forbidden"
+            exit 1
+          fi
+      - name: Fresh output dir; crash without it
+        run: |
+          set -e
+          if node --experimental-strip-types cli.ts --base x --head y; then
+            echo "missing --out must fail"
+            exit 1
+          fi
+          OUT=$(mktemp -d)
           set +e
-          node --experimental-strip-types cli.ts
+          node --experimental-strip-types cli.ts --repo . --base HEAD --head HEAD --out "$OUT"
           rc=$?
           set -e
-          test "$rc" -ne 0
-          test "$(cat out/verdict.txt)" = "REJECT"
+          test -f "$OUT/verdict.txt"
+          test -f "$OUT/comment.md"
+          test "$rc" -eq 0 -o "$rc" -eq 1
+      - name: Fixture L green for candidate, not ADMIT for Autopilot
+        run: node --experimental-strip-types --test test/integration/lifecycle.test.ts
